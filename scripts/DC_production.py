@@ -1,7 +1,4 @@
-import os
+import sys; sys.path.insert(0, '../'); from lib import *
 
-for N in [225,247,295,310,337]:
-    for set in ["SET1","SET2"]:
-        for ch in [1,2,3]:
-            for OV in [35,45,7]:
-                os.system("python3 SiPM_DC.py --OV "+str(OV)+" --set "+set +" --ch "+str(ch)+" --N "+str(N)+" --debug True")
+for n, label, ch, ov in product([225],["SET1"],[2],[35,45,7]):
+    os.system("python3 SiPM_DC.py --OV "+str(ov)+" --set "+label +" --ch "+str(ch)+" --N "+str(n)+" --debug True")

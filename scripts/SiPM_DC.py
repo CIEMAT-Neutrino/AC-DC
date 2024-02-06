@@ -64,7 +64,7 @@ PEAK_VALUES = np.array(ak.flatten(ak.Array(PEAK_VALUES)))
 #save the data for later fits, avoid reprocessing
 data={'DeltaT':DELTA_TIMES,'Amplitude':PEAK_VALUES}
 df=pd.DataFrame(data=data)
-data_path="../data/"+str(args.N)+"_"+args.set+"/"
+data_path="../data/"+str(args.N)+"/"+args.set+"/"
 print("Saving data in "+data_path)
 os.system("mkdir -p "+data_path)
 file_name=data_path+"DC_data_"+str(args.OV)+"_"+str(args.ch)+".csv"
