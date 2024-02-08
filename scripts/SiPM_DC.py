@@ -69,4 +69,5 @@ print("Saving data in "+data_path)
 os.system("mkdir -p "+data_path)
 file_name=data_path+"DC_data_"+str(args.OV)+"_"+str(args.ch)+".csv"
 df.to_csv(file_name,index=False)
+os.chmod(file_name, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 print("Done!")
