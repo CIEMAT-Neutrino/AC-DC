@@ -1,13 +1,31 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import awkward as ak
-
+import matplotlib.pyplot as plt
 import scipy.signal as signal
+
+from rich.progress import track
 from scipy.ndimage import gaussian_filter1d
 
 HEADER=3
 N_SEGMENTs=50
 PRETRIGGER=5e-6 #in s
+
+def SPE_get_ADCs_file(file_path):
+    ADCs=np.loadtxt(file_path, delimiter=',', skiprows=5)
+    period=ADCs[1,0]-ADCs[0,0]
+    ADCs=ADCs[:,1]
+    return ADCs,period
+
+def SPE_get_ADCs_file_list(file_list,polarity=1,PED_RANGE=250):
+    ADCs_list=[]
+    # for file_path in file_list:
+    for file_path in track(file_list, description="Processing WVFs"):
+        ADCs,period=SPE_get_ADCs_file(file_path)
+        ADCs_list.append(ADCs)
+    ADCs=np.array(ADCs_list)
+    ADCs = (ADCs.T - np.mean(ADCs[:, :PED_RANGE], axis=1).T).T
+    ADCs*=polarity
+    return ADCs,period
 
 def DC_get_times_file(file_path):
     decimal_numbers = []
@@ -35,17 +53,11 @@ def DC_read_file(file_path,polarity=1):
     times=DC_get_times_file(file_path)
     ADCs,period=DC_get_ADCs_file(file_path)
     ADCs=ADCs*polarity
-    
     return times, ADCs,period
 
 def smooth_and_find_peaks(ADCs,period, threshold=0.005, PED_RANGE=50):
-    # FILTERING
-    smoothed_ADCs = gaussian_filter1d(ADCs, sigma=4, mode='reflect', axis=1)
-    
-    # REMOVE PEDESTAL (baseline=0)    
+    smoothed_ADCs = gaussian_filter1d(ADCs, sigma=4, mode='reflect', axis=1) 
     smoothed_ADCs = (smoothed_ADCs.T - np.mean(smoothed_ADCs[:, :PED_RANGE], axis=1).T).T
-
-    # FIND PEAKS
     peaks = []
     peak_values = []  # New list to store ADC values at each peak
     for row in smoothed_ADCs:
@@ -56,11 +68,6 @@ def smooth_and_find_peaks(ADCs,period, threshold=0.005, PED_RANGE=50):
     return peaks, peak_values, smoothed_ADCs
 
 def DC_process_file(file_path):
-    #read the file
     times, ADCs,period=DC_read_file(file_path)
-
-    #find peaks
     peaks,  peak_values, _ = smooth_and_find_peaks(ADCs,period=period)
-
     return times, peaks, peak_values
-    # return times,mean_ADCs,period
