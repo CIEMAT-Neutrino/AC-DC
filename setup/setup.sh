@@ -27,6 +27,6 @@ for dir in "${directories[@]}"; do
         echo "$dir symlink already exists"
     else
         echo "generating symlink for $dir..."
-        sshfs manthey@gaeuidc1.ciemat.es:/pc/choozdsk01/palomare/ACDC/$dir "$dir"
+        sshfs ${USER}@gaeuidc1.ciemat.es:/pc/choozdsk01/palomare/ACDC/FBK_Preproduction "$dir"
     fi
 done
