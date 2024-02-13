@@ -12,7 +12,7 @@ from sklearn.metrics import silhouette_score
 from src.utils import get_project_root
 root = get_project_root()
 
-def classify_df(df, ow=False, debug=False):
+def classify_df(df, method="SILHOUETTE", ow=False, debug=False):
     # Find the peaks of the Amplitude distribution for each set, OV and Channel
     numbers = df['Number'].unique()
     labels = df['Set'].unique()
@@ -21,10 +21,11 @@ def classify_df(df, ow=False, debug=False):
 
     peaks = generate_yaml(df, 'peak', ow=ow, debug=debug)
     score = generate_yaml(df, 'score', ow=ow, debug=debug)
-    clusters = generate_yaml(df, 'clusters', ow=ow, debug=debug)
     
-    df['Cluster'] = -1
-
+    # Check if the Cluster column exists
+    if 'Cluster' not in df.columns:
+        df['Cluster'] = None
+    # Iterate over the combinations of Number, Set, OV and Channel
     for n, label, ov, ch in product(numbers, labels, ovs, chs):
         data = df[(df['Number'] == n) & (df['Set'] == label) & (df['OV'] == ov) & (df['Channel'] == ch)]
         # Skip if there are no data
@@ -36,22 +37,30 @@ def classify_df(df, ow=False, debug=False):
             if debug: rprint(f"Peak for {n} {label} {ov} {ch} already found")
             continue
         # Find the peaks of the Amplitude distribution by finding the cluster centers but iterate over the number of clusters to find the best number of clusters
-        for i in range(2,10):
+        for i in range(2,8):
             kmeans = KMeans(n_clusters=i, random_state=0).fit(data['Amplitude'].values.reshape(-1,1))
             prev_score = -1
-            this_score = silhouette_score(data['Amplitude'].values.reshape(-1,1), kmeans.labels_)
+            if method == "SILHOUETTE":
+                this_score = silhouette_score(data['Amplitude'].values.reshape(-1,1), kmeans.labels_)
+                if debug: rprint(f"Calculated silhouette score for {n} {label} {ov} {ch}: {this_score}") 
+            elif method == "ELBOW":
+                this_score = kmeans.inertia_
+                if debug: rprint(f"Calculated inertia for {n} {label} {ov} {ch}: {this_score}")
+            else:
+                rprint(f"Method {method} not implemented")
+                return
+            
             if this_score > prev_score:
                 score[int(n)][str(label)][int(ov)][int(ch)] = float(this_score)
                 peaks[int(n)][str(label)][int(ov)][int(ch)] = kmeans.cluster_centers_.tolist()
-                clusters[int(n)][str(label)][int(ov)][int(ch)] = kmeans.labels_.tolist()    
                 prev_score = this_score
         
-        if debug: rprint(f"Best number of clusters for {n} {label} {ov} {ch} is {i} with a silhouette score of {score[int(n)][str(label)][int(ov)][int(ch)]}")
+        if debug: rprint(f"Best number of clusters for {n} {label} {ov} {ch} is {i} with a score of {score[int(n)][str(label)][int(ov)][int(ch)]}")
         df.loc[(df['Number'] == n) & (df['Set'] == label) & (df['OV'] == ov) & (df['Channel'] == ch), 'Cluster'] = kmeans.labels_
-
+    
+    df.loc[:,'Cluster'] = df['Cluster'].astype(str)
     save_yaml(peaks, 'peak', debug=debug)
     save_yaml(score, 'score', debug=debug)
-    save_yaml(clusters, 'clusters', debug=debug)
     return df
 
 
