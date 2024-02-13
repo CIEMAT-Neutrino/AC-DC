@@ -10,6 +10,7 @@ from itertools import product
 from scipy.signal import find_peaks
 
 from .io import *
+from .ml import *
 from .lib import *
 from .fit import *
 from .plot import *
