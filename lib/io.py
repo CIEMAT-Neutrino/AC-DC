@@ -34,7 +34,7 @@ def load_df(stage:str,numbers:list,labels:list,ovs:list,chs:list,path:str=f'{roo
     df = pd.DataFrame()
     for n, label, ov, ch in product(numbers, labels, ovs, chs):
         try:
-            new_df = pd.read_csv(f'{path}{n}/{label}/DC_data{stage}_{ov}_{ch}.csv')
+            new_df = pd.read_csv(f'{path}{n}/{label}/{n}_{label}_DC_data{stage}_{ov}_{ch}.csv')
             # Append new df to existing df and add n,label,ov and ch as new columns with the same length as the new df
             if len(new_df) == 0:
                 if debug: rprint(f'No data for {n} {label} {ov} {ch}')
