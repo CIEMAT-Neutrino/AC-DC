@@ -1,0 +1,14 @@
+awkward
+jupyter
+jupyterlab
+plotly
+plotly.express
+matplotlib
+nbformat
+numpy
+pandas
+pyyaml
+pyzmq
+rich
+scipy
+sklearn
