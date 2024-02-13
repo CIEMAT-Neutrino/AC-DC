@@ -15,3 +15,5 @@ from .lib import *
 from .fit import *
 from .plot import *
 from .style import *
+
+from src.utils import get_project_root
