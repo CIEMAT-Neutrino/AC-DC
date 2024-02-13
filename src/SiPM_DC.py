@@ -1,56 +1,63 @@
 import sys; sys.path.insert(0, '../'); from lib import *
-from src.utils import get_project_root
 
 root = get_project_root()
 rprint("--------------------")
 
-parser = argparse.ArgumentParser(description="Purpose: Small program designed to read the SPE files and get the gain of each, adapted for Antonio Verdugo's data taking of FBK SiPMs with an oscilloscope. \n Designer: Rodrigo Alvarez Garrote")    
-parser.add_argument('--OV', type=int, default=7,
-                    help='Overvoltage')
+parser = argparse.ArgumentParser(description="Program designed to read the txt data files from the oscilloscope.")    
 parser.add_argument('--path', type=str, default=f'{root}/data/',
                     help='Folder containing all the data')
-parser.add_argument('--N', type=int, default=225,
-                    help='Set number')
+parser.add_argument('--n', type=int, default=225,
+                    help='Sensor number')
 parser.add_argument('--set', type=str, default="SET1",
-                    help='subset of the data')
+                    help='Subset of the data')
+parser.add_argument('--OV', type=int, default=7,
+                    help='Overvoltage')
 parser.add_argument('--ch', type=int, default=2,
-                    help='channel of the board')
+                    help='Channel of the setup/board')
+parser.add_argument('--polarity', type=int, default=-1,
+                    help='Polarity of the signal, -1 for negative, 1 for positive')
+parser.add_argument('--threshold', type=float, default=0.001,
+                    help='Threshold for the peak finding')
+parser.add_argument('--width', type=int, default=3,
+                    help='Width of the peak')
 parser.add_argument('--debug', type=bool,default=True,
-                    help='debug mode')
+                    help='Debug mode, if True prints the debug information')
 args = parser.parse_args()
+debug = args.debug
 
-debug =args.debug
+if debug: rprint(args)
+file_list = load_files(f'{args.path}{args.n}/{args.set}/DC/C{args.ch}--OV{args.OV}**')
+if file_list is None:
+    rprint("No files found, exiting...")
+    exit()
 
-le_path=args.path+str(args.N)+"/"+args.set+"/DC/C"+str(args.ch)+"--OV"+str(args.OV)+"**"
-file_list = load_files(le_path)
-
-DELTA_TIMES = []
-PEAK_VALUES = []
-for f_path in track(file_list, description="Processing WVFs"):
-    if debug: rprint(f"Processing {f_path}...")
-    times, peak_times, peak_values, = DC_process_file(f_path);
+delta_times = []
+peak_values = []
+for f_path in track(file_list, description="Processing WVFs"): # type: ignore
+    # if debug: rprint(f"Processing {f_path}...")
+    times, _, peak_times, peak_amps, = process_file(f_path, polarity=args.polarity, width=args.width, threshold=args.threshold, debug=debug);
     times=(ak.Array(peak_times)+ak.Array(times))
     times=ak.flatten(times)
     times_aux =times[1:]-times[:-1]
-    peak_values=ak.flatten(ak.Array(peak_values)) 
-    peak_values=peak_values[1:]
-    DELTA_TIMES.append(times_aux)
-    PEAK_VALUES.append(peak_values)
+    peak_amps=ak.flatten(ak.Array(peak_amps)) 
+    peak_amps=peak_amps[1:]
+    delta_times.append(times_aux)
+    peak_values.append(peak_amps)
 
 # Flatten
-DELTA_TIMES = np.array(ak.flatten(ak.Array(DELTA_TIMES)))
-PEAK_VALUES = np.array(ak.flatten(ak.Array(PEAK_VALUES)))
+delta_times = np.array(ak.flatten(ak.Array(delta_times)))
+peak_values = np.array(ak.flatten(ak.Array(peak_values)))
 
 # Save the data for later fits, avoid reprocessing
-data={'DeltaT':DELTA_TIMES,'Amplitude':PEAK_VALUES}
+data={'DeltaT':delta_times,'Amplitude':peak_values}
 df=pd.DataFrame(data=data)
-df['Number'] = args.N
+df['Number'] = args.n
 df['Set'] = args.set
 df['OV'] = args.OV
 df['Channel'] = args.ch
 df = classify_df(df, ow=True, debug=debug)
-fit_SiPM_response(df, filter_data=False, save=True, debug=debug)
-data_path=f"{root}/data/{str(args.N)}/{args.set}/"
+df = fit_SiPM_response(df, filter_data=False, save=True, debug=debug)
+data_path=f"{root}/data/{str(args.n)}/{args.set}/"
 os.system("mkdir -p "+data_path)
 file_name=f"{data_path}DC_data_{str(args.OV)}_{str(args.ch)}.csv"
 df.to_csv(file_name,index=False)
