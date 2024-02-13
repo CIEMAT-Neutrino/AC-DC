@@ -16,14 +16,18 @@ def SPE_get_ADCs_file(file_path):
     ADCs=ADCs[:,1]
     return ADCs,period
 
-def SPE_get_ADCs_file_list(file_list,polarity=1,PED_RANGE=250):
+def SPE_get_ADCs_file_list(file_list,polarity=1,buffer=100):
     ADCs_list=[]
     # for file_path in file_list:
     for file_path in track(file_list, description="Processing WVFs"):
         ADCs,period=SPE_get_ADCs_file(file_path)
         ADCs_list.append(ADCs)
     ADCs=np.array(ADCs_list)
-    ADCs = (ADCs.T - np.mean(ADCs[:, :PED_RANGE], axis=1).T).T
+    peak = np.argmax(ADCs[:,:],axis=1)
+    values,counts = np.unique(peak, return_counts=True)
+    ped_lim = values[np.argmax(counts)]-buffer
+    if ped_lim <= 0: ped_lim = 5*buffer
+    ADCs = (ADCs.T - np.mean(ADCs[:, :ped_lim], axis=1).T).T
     ADCs*=polarity
     return ADCs,period
 
