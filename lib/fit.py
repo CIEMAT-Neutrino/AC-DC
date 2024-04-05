@@ -57,7 +57,7 @@ def fit_SiPM_response(df:pd.DataFrame,filter_data:bool=False,save:bool=False,deb
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
 
         try:
-            popt, pcov = curve_fit(SiPM_response, bin_centers, hist, p0=[1e2,1,1e2,1e2,2], bounds=([0,1e-2,0,5e1,0],[1e6,5e1,1e6,1e4,10]))
+            popt, pcov = curve_fit(SiPM_response, bin_centers, hist, p0=[1e2,1,1e2,1e2,2], bounds=([0,1e-2,0,5e1,0],[1e6,5e1,1e6,1e9,10]))
         except RuntimeError:
             rprint(f'Fit failed for {n} {label} OV{ov} Ch{ch}')
             return df
@@ -67,8 +67,8 @@ def fit_SiPM_response(df:pd.DataFrame,filter_data:bool=False,save:bool=False,deb
         fig, ax = plt.subplots()
         ax.plot(bin_centers, hist, label='Data', drawstyle='steps-mid')
         ax.plot(bin_centers, SiPM_response(bin_centers, *popt), label='Fit')
-        ax.plot(bin_centers, dark_current_SiPM(bin_centers, *popt[:2]), label='DarkCurrent',ls='--')
-        ax.plot(bin_centers, bursts_SiPM(bin_centers, *popt[2:]), label='Bursts',ls='--')
+        ax.plot(bin_centers, dark_current_SiPM(bin_centers, *popt[:2]), label=f'DarkCurrent: {popt[1]:.2e} [Hz]',ls='--')
+        ax.plot(bin_centers, bursts_SiPM(bin_centers, *popt[2:]), label=f'Bursts: {popt[3]:.2e}',ls='--')
         ax.set_title(f'SiPM response fit for {n} {label} OV{ov} Ch{ch}')
         ax.set_xlabel('log10(DeltaT)')
         ax.set_ylabel('Counts')
@@ -107,9 +107,10 @@ def gaussian_train(x, *params):
 def fit_gaussians(x, y, *p0):
     assert x.shape == y.shape, "Input arrays must have the same shape."
     popt, pcov = curve_fit(gaussian_train, x,y, p0=p0[0])
+    perr = np.sqrt(np.diag(pcov))
     fit_y=gaussian_train(x,*popt)
     chi_squared = np.sum((y[abs(fit_y)>0.1] - fit_y[abs(fit_y)>0.1]) ** 2 / fit_y[abs(fit_y)>0.1]) / (y.size - len(popt))
-    return popt,fit_y, chi_squared
+    return popt, perr, fit_y, chi_squared
     
     
 def Q_out(V_out,period):
