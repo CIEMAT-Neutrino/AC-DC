@@ -59,7 +59,7 @@ df = classify_df(df, ow=True, debug=debug)
 df = fit_SiPM_response(df, filter_data=False, save=True, debug=debug)
 data_path=f"{root}/data/{str(args.n)}/{args.set}/"
 os.system("mkdir -p "+data_path)
-file_name=f"{data_path}DC_data_{str(args.OV)}_{str(args.ch)}.csv"
+file_name=f"{data_path}{args.n}_{args.set}_DC_data_{str(args.OV)}_{str(args.ch)}.csv"
 df.to_csv(file_name,index=False)
 os.chmod(file_name, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 rprint(f"Data saved in {file_name}")
