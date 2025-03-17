@@ -50,3 +50,22 @@ This script will create the following folders:
 - images: where the plots produced during the analysis are stored.
 
 Additionally, during the analysis process, folders analysis and images are created. The analysis folder contains the output of the analysis and the images folder contains the plots produced during the analysis.
+
+### Data Visualization
+
+To visualize the data, enter the src folder and run the event_display.ipynb notebook. This notebook will read the data and produce the event display with the peak finder. Make sure to take a first look at the data before running the analysis.
+
+### Dark Current Analysis
+
+To run the dark current analysis, run the run_DC_analysis.py script. This script will read the data and produce the dark current plots. The output of the analysis is stored in the analysis folder.
+
+```bash
+python src/run_DC_analysis.py -h
+python src/run_DC_analysis.py --args*
+```
+
+If you feel confident with the parameters, you can run the production script to process all the data. This script will run the analysis for all the data stored in the data folder.
+
+```bash
+bash scripts/run_DC_producer.sh
+```
