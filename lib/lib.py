@@ -1,4 +1,3 @@
-from re import A
 import numpy as np
 import awkward as ak
 import matplotlib.pyplot as plt
@@ -9,22 +8,24 @@ from rich.progress import track
 from scipy.ndimage import gaussian_filter1d
 
 
-def merge_processed_files(file_list, data:str="DC", polarity=-1, width=3, threshold=0.001, header:int=3, segments:int=50, debug:bool=False):
+def merge_processed_files(file_list, data:str="DC", polarity=-1, width:int=3, threshold:float=0.0, height:float=0.001, header:int=3, segments:int=50, debug:bool=False):
     ADCs = []
+    TIMEs = []
     for file_path in track(file_list, description="Processing WVFs"):
-        _, this_ADCs, _, _ = process_file(file_path, data=data, polarity=polarity,width=width,threshold=threshold, header=header, segments=segments, debug=debug)
+        times, this_ADCs, _, _ = process_file(file_path, data=data, polarity=polarity, width=width, threshold=threshold, height=height, header=header, segments=segments, debug=debug)
         ADCs.append(this_ADCs[0])
+        TIMEs.append(times)
     
-    return np.asarray(ADCs)
+    return np.asarray(ADCs), np.asarray(TIMEs)
 
 
-def process_file(file_path:str, data:str="DC", polarity:int=-1, width:int=3, threshold:float=0.001,  header:int=3, segments:int=50, debug:bool = False):
+def process_file(file_path:str, data:str="DC", polarity:int=1, width:int=3, threshold:float=0.0, height:float=0.001,  distance:int=20, header:int=3, segments:int=50, debug:bool = False):
     event_times, ADCs, period = read_file(file_path, data=data, header=header, segments=segments, debug=debug)
     ADCs = np.asarray(ADCs)
     ADCs=ADCs*polarity
     ped_lim = get_ped_lim(ADCs, buffer=50)
     ADCs = (ADCs.T - np.mean(ADCs[:, :ped_lim], axis=1).T).T
-    peaks,  peak_values = find_peaks(ADCs, period=period,  width=width, threshold=threshold, debug=debug)
+    peaks,  peak_values = peak_finder(ADCs, period=period,  width=width, threshold=threshold, height=height, distance=distance, debug=debug)
     
     return event_times, ADCs, peaks, peak_values
 
@@ -82,11 +83,11 @@ def read_file(file_path, data:str="DC", header:int=3, segments:int=50, debug:boo
     return event_times, ADCs, period
 
 
-def find_peaks(ADCs, period, width=3, height:float=0.001, threshold:float=0.001, debug:bool=False):
+def peak_finder(ADCs, period, width=3, height:float=0.001, threshold:float=0.0, distance:int=20, debug:bool=False):
     peaks = []
     peak_values = []  # New list to store ADC values at each peak
     for row in ADCs:
-        peak_indices, _ = signal.find_peaks(row, width=width, height=height, threshold=threshold)
+        peak_indices, _ = signal.find_peaks(row, width=width, height=height, threshold=threshold, distance=distance)
         peaks.append(peak_indices*period)
         peak_values.append(row[peak_indices])  # Store ADC values at each peak
 

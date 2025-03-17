@@ -49,7 +49,7 @@ def fit_SiPM_response(df:pd.DataFrame,filter_data:bool=False,save:bool=False,deb
         # Make a histogram of the frequency using np.histogram
         amp_lim = data["Amplitude"].max()
         if filter_data:
-            with open('{root}/data/analysis/SPE.json') as json_file:
+            with open('{root}/analysis/SPE.json') as json_file:
                 SPE_data = json.load(json_file)
             amp_lim = SPE_data[str(n)][label]["OV"][str(ov)]
 
@@ -75,11 +75,11 @@ def fit_SiPM_response(df:pd.DataFrame,filter_data:bool=False,save:bool=False,deb
         ax.legend()
 
         if save:
-            image_path = f'{root}/data/images/{n}/{label}/'
+            image_path = f'{root}/images/{n}/{label}/'
             os.system(f'mkdir -p {image_path}')
             plt.savefig(f'{image_path}/{n}_{label}_DC_data_fit_{ov}_{ch}.png', dpi=300)
             plt.close()
-            with open(f'{root}/data/{n}/{label}/{n}_{label}_DC_data_fit_{ov}_{ch}.csv', 'w') as file:
+            with open(f'{root}/analysis/{n}/{label}/{n}_{label}_DC_data_fit_{ov}_{ch}.csv', 'w') as file:
                 file.write(f'Number,Set,OV,Channel,A,dA,DarkCurrent,dDarkCurrent,B,dB,Bursts,dBursts,E,dE\n')
                 file.write(f'{n},{label},{ov},{ch},{popt[0]},{perr[0]},{popt[1]},{perr[1]},{popt[2]},{perr[2]},{popt[3]},{perr[3]},{popt[4]},{perr[4]}\n')
             file.close()

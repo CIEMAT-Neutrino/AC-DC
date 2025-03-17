@@ -42,10 +42,13 @@ def classify_df(df, method="SILHOUETTE", ow=False, debug=False):
             prev_score = -1
             if method == "SILHOUETTE":
                 this_score = silhouette_score(data['Amplitude'].values.reshape(-1,1), kmeans.labels_)
-                if debug: rprint(f"Calculated silhouette score for {n} {label} {ov} {ch}: {this_score}") 
+                if debug: rprint(f"Calculated {i} cluster silhouette score for {n} {label} {ov} {ch}: {this_score}") 
             elif method == "ELBOW":
                 this_score = kmeans.inertia_
-                if debug: rprint(f"Calculated inertia for {n} {label} {ov} {ch}: {this_score}")
+                if debug: rprint(f"Calculated {i} cluster inertia for {n} {label} {ov} {ch}: {this_score}")
+            elif method == "SSE":
+                this_score = kmeans.score(data['Amplitude'].values.reshape(-1,1))
+                if debug: rprint(f"Calculated {i} cluster score for {n} {label} {ov} {ch}: {this_score}")
             else:
                 rprint(f"Method {method} not implemented")
                 return
@@ -53,9 +56,11 @@ def classify_df(df, method="SILHOUETTE", ow=False, debug=False):
             if this_score > prev_score:
                 score[int(n)][str(label)][int(ov)][int(ch)] = float(this_score)
                 peaks[int(n)][str(label)][int(ov)][int(ch)] = kmeans.cluster_centers_.tolist()
+                rprint(f'-> Updating {method} score to {score[int(n)][str(label)][int(ov)][int(ch)]} and peak to {peaks[int(n)][str(label)][int(ov)][int(ch)]}')
+                best_cluster = i
                 prev_score = this_score
         
-        if debug: rprint(f"Best number of clusters for {n} {label} {ov} {ch} is {i} with a score of {score[int(n)][str(label)][int(ov)][int(ch)]}")
+        if debug: rprint(f"Best number of clusters for {n} {label} {ov} {ch} is {best_cluster} with a score of {score[int(n)][str(label)][int(ov)][int(ch)]}")
         df.loc[(df['Number'] == n) & (df['Set'] == label) & (df['OV'] == ov) & (df['Channel'] == ch), 'Cluster'] = kmeans.labels_
     
     df.loc[:,'Cluster'] = df['Cluster'].astype(str)
@@ -64,7 +69,7 @@ def classify_df(df, method="SILHOUETTE", ow=False, debug=False):
     return df
 
 
-def generate_yaml(df:pd.DataFrame, name:str, path:str=f'{root}/data/analysis/', ow:bool=False, debug:bool=False):
+def generate_yaml(df:pd.DataFrame, name:str, path:str=f'{root}/analysis/', ow:bool=False, debug:bool=False):
     # Check if path exists
     if not os.path.exists(path):
         os.makedirs(path)
@@ -100,7 +105,7 @@ def generate_yaml(df:pd.DataFrame, name:str, path:str=f'{root}/data/analysis/', 
     return data
 
 
-def save_yaml(data:dict, name:str, path:str=f'{root}/data/analysis/', debug:bool=False) -> None:
+def save_yaml(data:dict, name:str, path:str=f'{root}/analysis/', debug:bool=False) -> None:
     # Save the data
     with open(f'{path}{name}.yml', 'w') as file:
         yaml.dump(data, file)

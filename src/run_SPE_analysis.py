@@ -27,7 +27,7 @@ parser.add_argument('--debug', type=bool,default=True,
                     help='Debug mode, if True prints the debug information')
 args = parser.parse_args()
 debug = args.debug
-plot_path=f"{root}/data/images/{args.n}/{args.set}/"
+plot_path=f"{root}/images/{args.n}/{args.set}/"
 os.system("mkdir -p "+plot_path)
 
 if debug: rprint(args)
@@ -75,7 +75,7 @@ plt.savefig(f"{plot_path}{args.n}_{args.set}_SPE_data_calibration_{args.OV}_{arg
 plt.semilogy()
 plt.savefig(f"{plot_path}{args.n}_{args.set}_SPE_data_calibration_logy_{args.OV}_{args.ch}.png",dpi=300)
 
-file_path=f"{root}/data/analysis/{args.n}/{args.set}/"
+file_path=f"{root}/analysis/{args.n}/{args.set}/"
 os.system("mkdir -p "+file_path)
 filename=f"{file_path}{args.n}_{args.set}_SPE_data_calibration_{args.OV}_{args.ch}.csv"
 df = pd.DataFrame({'Peak': [], 'Mu': [], "dMu":[], 'Sigma': [], "dSigma":[], 'Gain': [], "dGain":[]})
