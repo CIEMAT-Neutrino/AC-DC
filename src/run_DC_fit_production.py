@@ -17,4 +17,4 @@ parser.add_argument('-debug', type=bool, default=True,
 args = parser.parse_args()
 
 for n, label, ch, ov in product(args.n, args.set, args.ch, args.OV):
-    os.system(f"python3 run_DC_analysis.py --n {n} --set {label} --OV {ov} --ch {ch} --polarity -1 --debug True")
+    os.system(f"python3 run_DC_fit_analysis.py --n {n} --set {label} --OV {ov} --ch {ch} --polarity -1 --debug True")
