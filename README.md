@@ -1,13 +1,18 @@
 # AC-DC
+
 After-pulses &amp; Cross-talk from Dark Current
 
 ## Introduction
+
 This is a repository to evaluate the xtalk and afterpulses of photosensors from dark current data. For now the supported format is segmented wvfs stored to txt files (see ref. data for more information).
 The structure of the data is as follows:
-```
+
+```bash
 data/number/label/Cx--OVy--zzzzz.txt
 ```
+
 where:
+
 - number is the number of the sensor
 - label is the set number (SET1, SET2 for SiPMs mounted on boards -> 6 channels)
 - x is the channel number
@@ -15,12 +20,33 @@ where:
 - zzzzz is the number of the file
 
 The repository is divided in 3 main parts:
-- data: where the data is stored. See setup folder and scripts for more information on how to mount the data.
-- scripts: where the main analysis scripts are stored. There is a script (production.py) that is used to produce the data for the analysis.
-- notebooks: where the main analysis notebooks are stored. Notebooks read the output of the production.py script and produce the standard plots for the analysis.
 
-Additionally, during the analysis process, folders analysis and images are created inside the data folder. The analysis folder contains the output of the analysis and the images folder contains the plots produced during the analysis.
+- lib: where the main functions are stored.
+- scripts: where the setup and axuliary bash scripts are stored to preparate the data for the analysis.
+- src: where the main analysis scripts are stored. There is are two scripts (run_DC_analysis.py and run_SPE_analysis.py) that are used to run the analysis. This folder also contains notebooks, which read the output of the analysis scripts and produce the standard plots for the results.
 
 ## Installation
 
+To install the repository, clone the repository and install the requirements:
+
+```bash
+git clone https://github.com/CIEMAT-Neutrino/AC-DC.git
+cd AC-DC
+pip install -r requirements.txt
+```
+
 ## Workflow
+
+The first step is to setup the local environment. This is done by running the setup.sh script. This script will create the necessary folders and will link the data to the data folder. The data folder is the main folder where the data is stored. The setup.sh script will also create the necessary folders for the analysis.
+
+```bash
+bash scripts/setup.sh
+```
+
+This script will create the following folders:
+
+- data: where the data is stored. See setup folder and scripts for more information on how to mount the data.
+- analysis: where the output of the analysis is stored.
+- images: where the plots produced during the analysis are stored.
+
+Additionally, during the analysis process, folders analysis and images are created. The analysis folder contains the output of the analysis and the images folder contains the plots produced during the analysis.
