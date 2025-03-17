@@ -1,9 +1,7 @@
 import sys
+sys.path.insert(0, '../')
+from lib import *
 
-from numpy import mean; sys.path.insert(0, '../'); from lib import *
-from src.utils import get_project_root
-
-root = get_project_root()
 rprint("--------------------")
 
 parser = argparse.ArgumentParser(description="Program designed to read the txt data files from the oscilloscope.")    
@@ -19,7 +17,9 @@ parser.add_argument('--ch', type=int, default=0,
                     help='Channel of the setup/board')
 parser.add_argument('--polarity', type=int, default=-1,
                     help='Polarity of the signal, -1 for negative, 1 for positive')
-parser.add_argument('--threshold', type=float, default=0.001,
+parser.add_argument('--height', type=float, default=0.001,
+                    help='Height for the peak finding')
+parser.add_argument('--threshold', type=float, default=0.0,
                     help='Threshold for the peak finding')
 parser.add_argument('--width', type=int, default=3,
                     help='Width of the peak')
@@ -36,7 +36,7 @@ if file_list is None:
     rprint("No files found, exiting...")
     exit()
 
-ADCs = merge_processed_files(file_list, data="SPE", width=args.width, threshold=args.threshold, polarity=args.polarity, header=5, segments=0, debug=debug)
+ADCs, _ = merge_processed_files(file_list, data="SPE", width=args.width, threshold=args.threshold, polarity=args.polarity, header=5, segments=0, debug=debug)
 charge = np.sum(ADCs[:,50:150],axis=1)
 
 # Select percentile of the charge
