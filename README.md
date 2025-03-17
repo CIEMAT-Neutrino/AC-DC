@@ -32,6 +32,12 @@ To install the repository, clone the repository and install the requirements:
 ```bash
 git clone https://github.com/CIEMAT-Neutrino/AC-DC.git
 cd AC-DC
+## RECOMMENDED: create a virtual environment
+mkdir .venv && cd .venv
+/cvmfs/sft.cern.ch/lcg/releases/Python/3.7.3-f4f57/x86_64-centos7-gcc7-opt/bin/python3 -m venv .
+source bin/activate
+pip install --upgrade pip
+## Install the requirements
 pip install -r requirements.txt
 ```
 
@@ -53,11 +59,11 @@ Additionally, during the analysis process, folders analysis and images are creat
 
 ### Data Visualization
 
-To visualize the data, enter the src folder and run the event_display.ipynb notebook. This notebook will read the data and produce the event display with the peak finder. Make sure to take a first look at the data before running the analysis.
+To visualize the data, enter the ```src``` folder and run the ```event_display.ipynb``` notebook. This notebook will read the data and produce the event display with the peak finder. Make sure to take a first look at the data before running the analysis.
 
 ### Dark Current Analysis
 
-To run the dark current analysis, run the run_DC_analysis.py script. This script will read the data and produce the dark current plots. The output of the analysis is stored in the analysis folder.
+To run the dark current analysis, run the ```run_DC_analysis.py``` script. This script will read the data and produce the dark current plots. The output of the analysis is stored in the analysis folder.
 
 ```bash
 python src/run_DC_analysis.py -h

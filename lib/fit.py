@@ -76,14 +76,16 @@ def fit_SiPM_response(df:pd.DataFrame,filter_data:bool=False,save:bool=False,deb
 
         if save:
             image_path = f'{root}/images/{n}/{label}/'
+            analysis_path = f'{root}/analysis/{n}/{label}/'
             os.system(f'mkdir -p {image_path}')
+            os.system(f'mkdir -p {analysis_path}')
             plt.savefig(f'{image_path}/{n}_{label}_DC_data_fit_{ov}_{ch}.png', dpi=300)
             plt.close()
             with open(f'{root}/analysis/{n}/{label}/{n}_{label}_DC_data_fit_{ov}_{ch}.csv', 'w') as file:
                 file.write(f'Number,Set,OV,Channel,A,dA,DarkCurrent,dDarkCurrent,B,dB,Bursts,dBursts,E,dE\n')
                 file.write(f'{n},{label},{ov},{ch},{popt[0]},{perr[0]},{popt[1]},{perr[1]},{popt[2]},{perr[2]},{popt[3]},{perr[3]},{popt[4]},{perr[4]}\n')
             file.close()
-            os.chmod(f'{root}/data/{n}/{label}/{n}_{label}_DC_data_fit_{ov}_{ch}.csv', stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+            os.chmod(f'{root}/analysis/{n}/{label}/{n}_{label}_DC_data_fit_{ov}_{ch}.csv', stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
         
     
     if debug: rprint(f'Updated df with Frequency and LogDeltaT')
